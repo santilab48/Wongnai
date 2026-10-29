@@ -4,6 +4,12 @@ function doPost(e) {
     const p = JSON.parse(e.postData.contents);
     const expected = PropertiesService.getScriptProperties().getProperty('CAPTURE_TOKEN');
     if (!expected || p.token !== expected) throw new Error('unauthorized');
+    if (p.action === 'report') {
+      const recipient = PropertiesService.getScriptProperties().getProperty('REPORT_EMAIL');
+      if (!recipient || p.recipient !== recipient) throw new Error('invalid recipient');
+      MailApp.sendEmail(recipient, 'Wongnai capture status', 'Firmware error count: ' + Number(p.errors || 0));
+      return reply({ok:true,action:'report'});
+    }
     if (!/^[a-f0-9-]{1,80}$/i.test(p.eventId)) throw new Error('invalid eventId');
     const lock = LockService.getScriptLock();
     lock.waitLock(20000);

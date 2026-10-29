@@ -1,5 +1,28 @@
 #include "CaptureServer.h"
 #include "PrintParser.h"
-bool CaptureServer::begin(uint16_t port,CaptureStorage* storage){storage_=storage;server_=new WiFiServer(port);server_->begin();server_->setNoDelay(true);return true;}
-void CaptureServer::finish(){if(buffer_.bytes().size()){CaptureRecord r;r.id=String((uint32_t)ESP.getEfuseMac(),HEX)+"-"+String(millis(),HEX)+"-"+String(accepted_);r.ip=client_.remoteIP().toString();r.port=client_.remotePort();r.timestamp=time(nullptr);auto p=PrintParser::parse(buffer_.bytes().data(),buffer_.bytes().size());r.format=p.format;r.text=p.text.substring(0,512);if(!storage_->append(r,buffer_.bytes().data(),buffer_.bytes().size()))errors_++;}client_.stop();buffer_.clear();active_=false;}
-void CaptureServer::tick(){if(!server_)return;if(!active_){WiFiClient next=server_->available();if(next){client_=next;active_=true;opened_=millis();accepted_++;buffer_.clear();}}if(!active_)return;uint8_t chunk[1024];while(client_.available()){int n=client_.read(chunk,sizeof chunk);if(n<=0)break;opened_=millis();if(buffer_.bytes().size()+n>65536){errors_++;client_.stop();buffer_.clear();active_=false;return;}buffer_.append(chunk,n);}if(!client_.connected()||millis()-opened_>5000)finish();}
+bool CaptureServer::begin(uint16_t port,CaptureStorage* storage){if(!storage||server_)return false;storage_=storage;server_=new WiFiServer(port);server_->begin();server_->setNoDelay(true);return true;}
+void CaptureServer::finish(ClientState& c,bool incomplete){
+ if(!c.active)return;
+ if(!c.bytes.bytes().empty()){
+  CaptureRecord r;
+  r.id=String((uint32_t)ESP.getEfuseMac(),HEX)+"-"+String(c.last,HEX)+"-"+String(c.sequence,HEX);
+  r.ip=c.socket.remoteIP().toString();r.port=c.socket.remotePort();r.timestamp=time(nullptr);
+  auto p=PrintParser::parse(c.bytes.bytes().data(),c.bytes.bytes().size());
+  r.format=p.format;r.text=p.text.substring(0,512);r.incomplete=incomplete;
+  if(!storage_->append(r,c.bytes.bytes().data(),c.bytes.bytes().size()))errors_++;
+ }
+ c.socket.stop();c.bytes.clear();c.active=false;
+}
+void CaptureServer::tick(){
+ if(!server_)return;
+ // Accept at most one new client per iteration; a full pool closes the connection.
+ WiFiClient incoming=server_->available();
+ if(incoming){bool assigned=false;for(auto& c:clients_)if(!c.active){c.socket=incoming;c.active=true;c.last=millis();c.sequence=++accepted_;c.bytes.clear();assigned=true;break;}if(!assigned){incoming.stop();errors_++;}}
+ for(auto& c:clients_){
+  if(!c.active)continue;
+  uint8_t chunk[1024];size_t budget=4096;
+  while(c.socket.available()&&budget){int n=c.socket.read(chunk,min(sizeof chunk,budget));if(n<=0)break;budget-=n;c.last=millis();if(!c.bytes.append(chunk,n)){errors_++;c.socket.stop();c.bytes.clear();c.active=false;break;}}
+  if(c.active&&!c.socket.connected()&&!c.socket.available())finish(c,false);
+  else if(c.active&&millis()-c.last>5000)finish(c,true);
+ }
+}

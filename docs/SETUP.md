@@ -19,12 +19,12 @@ Create a spreadsheet with an `Events` sheet and a Drive folder for raw bytes. Pa
 ## Known limitations
 
 - LCD/touch controller and pinout unverified; display and touch adapters are placeholders. Dashboard, history and raw views are not operational.
-- Single active TCP client; extra clients wait or may be rejected. Jobs above 64 KiB are rejected; overflow data is discarded with an error counter. Chunk boundaries are preserved within a connection, but idle timeout splits a job.
+- Four active TCP clients are supported with 32 KiB per job; further clients and oversized jobs are rejected with an error counter. Chunk boundaries are preserved within a connection, but idle timeout splits a job.
 - Wi-Fi AP cannot yet accept configuration; static IP and connectivity probe are absent.
 - Queue has CRC and temporary-file commit but no dedicated queue manifest, durability audit or wear benchmark. Flash partition size is provisional.
 - ESC/POS parser handles selected commands and UTF-8; Thai legacy code pages and full raster length parsing are absent. It does not infer order fields.
 - Apps Script stores raw data as a Drive file, but upload size/latency limits and Drive orphan cleanup need testing. The token is sent in JSON body, so TLS certificate verification is mandatory before use.
-- Email is provided by a scheduled Apps Script report; firmware-triggered alert reporting is absent.
+- Firmware report POST runs in a separate FreeRTOS cloud task and requires NVS `email` keys `url`, `token`, `ca`, `recipient`; Apps Script only sends to the configured `REPORT_EMAIL`. Provisioning UI and real endpoint validation remain outstanding.
 - No hardware tests, live Google upload, 24-hour soak, POS integration or load test has run.
 - A future authorized print gateway could forward a copy to this device without changing printer traffic; it is not implemented.
 
