@@ -1,0 +1,6 @@
+#include "ArchiveFormat.h"
+#include <cassert>
+#include <cstdio>
+#include <fstream>
+#include <vector>
+int main(){const char* path="/tmp/wongnai-archive-persistence.rec";std::vector<uint8_t> raw(32768);for(size_t i=0;i<raw.size();i++)raw[i]=uint8_t(i);ArchiveFormat::Header h{ArchiveFormat::Magic,(uint32_t)raw.size(),ArchiveFormat::crc32(raw.data(),raw.size()),0};{std::ofstream f(path,std::ios::binary|std::ios::trunc);f.write((char*)&h,sizeof h);f.write((char*)raw.data(),raw.size());assert(f.good());}auto reopen=[&](){std::ifstream f(path,std::ios::binary|std::ios::ate);size_t size=f.tellg();f.seekg(0);ArchiveFormat::Header loaded{};f.read((char*)&loaded,sizeof loaded);std::vector<uint8_t> payload(loaded.length);f.read((char*)payload.data(),payload.size());assert(ArchiveFormat::valid(loaded,size,payload.data()));return payload;};assert(reopen()==raw);{std::fstream f(path,std::ios::binary|std::ios::in|std::ios::out);f.seekp(sizeof h+1);char bad=0;f.write(&bad,1);}std::ifstream f(path,std::ios::binary|std::ios::ate);size_t size=f.tellg();f.seekg(0);ArchiveFormat::Header loaded{};f.read((char*)&loaded,sizeof loaded);std::vector<uint8_t> payload(loaded.length);f.read((char*)payload.data(),payload.size());assert(!ArchiveFormat::valid(loaded,size,payload.data()));std::remove(path);}

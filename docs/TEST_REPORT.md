@@ -30,3 +30,16 @@
 | Real TCP events on physical LCD; touch and Wi-Fi provisioning | NOT TESTED | No verified PCBfun board available; LCDWIKI remains a candidate profile. |
 | TCP latency during UI refresh and cloud failure | NOT TESTED | The loop polls capture before UI; LittleFS reads and LCD drawing can still pause polling. Hardware timing evidence is required. |
 | Raw data after cloud acknowledgment | NOT TESTED | Current queue removes records on acknowledgment, so inspection is available only while the record remains pending. |
+
+## Persistent archive split (2026-10-29)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Normal LCDWIKI candidate compile | PASS | `pio run -e lcdwiki_es3c28p_candidate`; `/tmp/wongnai-archive-normal.log` |
+| LCDWIKI diagnostic compile | PASS | `pio run -e lcdwiki_es3c28p_diagnostic`; `/tmp/wongnai-archive-diagnostic.log` |
+| Archive record CRC, 32 KiB boundary, binary bytes, capacity guard | PASS | `c++ -std=c++17 -Ifirmware/include firmware/test/host/archive_format_test.cpp -o /tmp/wongnai-archive-test && /tmp/wongnai-archive-test` |
+| History navigation and raw HEX/TEXT UI | PASS | `c++ -std=c++17 -Ifirmware/test/host/stubs -Ifirmware/include firmware/src/UiModel.cpp firmware/test/host/ui_test.cpp -o /tmp/wongnai-ui-test && /tmp/wongnai-ui-test` |
+| Host archive file reopen, binary integrity, CRC corruption | PASS | `c++ -std=c++17 -Ifirmware/include firmware/test/host/archive_persistence_test.cpp -o /tmp/wongnai-archive-persistence-test && /tmp/wongnai-archive-persistence-test`; uses the firmware archive format on a host file. |
+| LittleFS restart and power-loss recovery | NOT TESTED | Recovery and legacy queue migration compile, but no LittleFS host fixture or physical board test was run. |
+| Cloud acknowledgment preserves archive | NOT TESTED | Code removes only the `.pending` marker after validated acknowledgment; no live cloud or filesystem fault test was run. |
+| Full storage on board and TCP latency during Flash scans | NOT TESTED | Capacity guard has a host test; no board timing or Flash saturation test was run. |

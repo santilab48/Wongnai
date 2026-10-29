@@ -1,0 +1,4 @@
+#include "ArchiveFormat.h"
+#include <cassert>
+#include <vector>
+int main(){std::vector<uint8_t> original(32768);for(size_t i=0;i<original.size();i++)original[i]=uint8_t(i);original[0]=0;original[1]=255;ArchiveFormat::Header h{ArchiveFormat::Magic,(uint32_t)original.size(),ArchiveFormat::crc32(original.data(),original.size()),23};size_t fileSize=sizeof h+h.metaLength+h.length;assert(ArchiveFormat::valid(h,fileSize,original.data()));auto recovered=original;assert(recovered==original);recovered[1]^=1;assert(!ArchiveFormat::valid(h,fileSize,recovered.data()));assert(!ArchiveFormat::valid(h,fileSize-1,original.data()));assert(ArchiveFormat::fits(100000,32768,23,70000)==false);assert(ArchiveFormat::fits(110000,32768,23,70000));h.length=32769;assert(!ArchiveFormat::valid(h,fileSize,original.data()));}
