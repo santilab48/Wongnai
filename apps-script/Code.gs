@@ -17,8 +17,8 @@ function doPost(e) {
       const sheet = SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SHEET_ID')).getSheetByName('Events');
       if (!sheet) throw new Error('missing Events sheet');
       if (sheet.getLastRow() === 0) sheet.appendRow(HEADERS);
-      const existing = sheet.createTextFinder(p.eventId).matchEntireCell(true).findNext();
-      if (existing && existing.getColumn() === 1) return reply({ok:true,eventId:p.eventId,duplicate:true});
+      const existing = sheet.getRange(1, 1, sheet.getLastRow(), 1).createTextFinder(p.eventId).matchEntireCell(true).findNext();
+      if (existing) return reply({ok:true,eventId:p.eventId,duplicate:true});
       const raw = Utilities.base64Decode(p.rawBase64 || '');
       if (raw.length !== Number(p.bytes) || raw.length > 65536) throw new Error('invalid raw length');
       const folder = DriveApp.getFolderById(PropertiesService.getScriptProperties().getProperty('RAW_FOLDER_ID'));
