@@ -13,7 +13,8 @@
 | Event ID idempotency | NOT TESTED | Receiver lookup now searches only column A under a script lock; no Apps Script fixture or deployment test was run. |
 | HTTPS email report | NOT TESTED | Firmware and Apps Script report request/ack code reviewed; no configured gateway, token, recipient, or deployment test. |
 | Capture during cloud failures | NOT TESTED | Capture and cloud tasks are separate in firmware; board-level responsiveness under failures has not been measured. |
-| LCD/touch/Wi-Fi setup | BLOCKED | Exact board documentation and hardware absent |
+| LCDWIKI candidate and diagnostic compile | PASS | Separate `pio run -e lcdwiki_es3c28p_candidate` and `pio run -e lcdwiki_es3c28p_diagnostic` succeeded; logs `/tmp/wongnai-lcdwiki-candidate.log` and `/tmp/wongnai-lcdwiki-diagnostic.log`. |
+| LCDWIKI LCD/touch hardware validation | NOT TESTED | Physical ES3C28P revision has not been verified; no flashing or hardware test performed. |
 | TCP capture on board | NOT TESTED | No hardware; Python socket tests do not validate ESP32 listener |
 | Parser and queue on board | NOT TESTED | No hardware |
 | Google Sheets/email | NOT TESTED | No configured deployment or provisioned CA/token |

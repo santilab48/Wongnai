@@ -31,3 +31,9 @@ Create a spreadsheet with an `Events` sheet and a Drive folder for raw bytes. Pa
 ## Candidate hardware reference
 
 The attached hardware reference identifies the **Waveshare** ESP32-S3-Touch-LCD-2.8 as a candidate only. Its ST7789 and SPI pins are recorded in `firmware/include/board_profiles/waveshare_esp32s3_touch_lcd_28_candidate.h`, which is not enabled. Waveshare V1 uses CST328 touch, while V2 uses CST3530. Neither controller nor any pin mapping is verified for PCBfun. A vendor schematic or actual board inspection is required before enabling a display/touch driver.
+
+## LCDWIKI ES3C28P candidate
+
+The [LCDWIKI 2.8inch ESP32-S3 Display](https://www.lcdwiki.com/2.8inch_ESP32-S3_Display) is the source for the ES3C28P family identification. The candidate profile uses the supplied ILI9341V SPI map (CS 10, DC 46, SCLK 12, MOSI 11, MISO 13, backlight 45; reset on CHIP_PU/EN) and FT6336G I2C map (SDA 16, SCL 15, RST 18, INT 17). The display is 240 × 320. Select `lcdwiki_es3c28p_candidate` to compile the UI adapter, or `lcdwiki_es3c28p_diagnostic` for a blue LCD test screen and touch coordinates on Serial. The latter is intended for later bench testing only. The physical board revision, flash geometry, backlight polarity, touch orientation, and display behavior remain unverified. The Waveshare profile remains present and disabled.
+
+Build with `PLATFORMIO_CORE_DIR=/workspace/.platformio pio run -e lcdwiki_es3c28p_candidate` or `pio run -e lcdwiki_es3c28p_diagnostic` from `firmware/`. Do not flash until the physical board is verified.

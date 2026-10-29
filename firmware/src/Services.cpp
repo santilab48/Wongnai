@@ -24,6 +24,40 @@ void EmailReporter::tick(const Diagnostics& d){
  if(code==200&&!deserializeJson(ack,response)&&ack["ok"].as<bool>()&&ack["action"].as<String>()=="report")delay_=3600000;
  else delay_=min<uint32_t>(delay_*2,3600000u);
 }
-void DisplayManager::begin(){Serial.println("LCD adapter disabled: controller and GPIO map unverified");}
-void DisplayManager::tick(const Diagnostics& d,const CaptureStorage& s){(void)d;(void)s;}
-void TouchInput::begin(){}void TouchInput::tick(){}
+void DisplayManager::begin(){
+#ifdef BOARD_LCDWIKI_ES3C28P
+ adapter_.begin();
+#else
+ Serial.println("LCD adapter disabled: select LCDWIKI profile for candidate hardware");
+#endif
+}
+void DisplayManager::tick(const Diagnostics& d,const CaptureStorage& s){
+#ifdef BOARD_LCDWIKI_ES3C28P
+ if(millis()-lastDraw_<500)return;lastDraw_=millis();
+#ifdef LCDWIKI_DIAGNOSTIC
+ adapter_.clear(0x001f);adapter_.text(8,8,"LCDWIKI DIAGNOSTIC",0xffff);adapter_.text(8,40,"Touch: tap screen",0xffff);
+#else
+ model_.draw(adapter_,WiFi.SSID(),WiFi.localIP().toString(),d.state(true,false,const_cast<CaptureStorage&>(s).freeBytes()),const_cast<CaptureStorage&>(s).pending());
+#endif
+#else
+ (void)d;(void)s;
+#endif
+}
+void TouchInput::begin(){
+#ifdef BOARD_LCDWIKI_ES3C28P
+ adapter_.begin();Serial.println(adapter_.present()?"FT6336G detected":"FT6336G not detected");
+#endif
+}
+void TouchInput::tick(){
+#ifdef BOARD_LCDWIKI_ES3C28P
+ int x,y;bool down=adapter_.read(x,y);
+ if(down&&!pressed_){
+#ifdef LCDWIKI_DIAGNOSTIC
+  Serial.printf("Touch: %d,%d\n",x,y);
+#else
+  if(model_)model_->onTouch(x,y);
+#endif
+ }
+ pressed_=down;
+#endif
+}
