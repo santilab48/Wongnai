@@ -8,7 +8,7 @@ Install PlatformIO, then run `python -m platformio run -d firmware`. The selecte
 
 ## Wi-Fi and Google
 
-Wi-Fi settings are stored in NVS namespace `wifi`, keys `ssid` and `password`. Without credentials, the firmware starts an AP named `Wongnai-Setup`, but AP configuration and on-screen keyboard are not implemented. NVS namespace `upload` expects keys `url` and `token`; an authenticated device provisioning UI is still required. The uploader currently has no configured root CA and should not be used for production upload. Never place credentials in source control.
+Wi-Fi settings are stored in NVS namespace `wifi`, keys `ssid` and `password`. Without credentials, the firmware starts an AP named `Wongnai-Setup`, but AP configuration and on-screen keyboard are not implemented. NVS namespace `upload` expects keys `url`, `token`, and `ca` (PEM root CA certificate); an authenticated device provisioning UI is still required. The uploader refuses upload without a configured CA certificate; no secure provisioning UI exists yet. Never place credentials in source control.
 
 Create a spreadsheet with an `Events` sheet and a Drive folder for raw bytes. Paste `apps-script/Code.gs` into Apps Script and set script properties `CAPTURE_TOKEN`, `SHEET_ID`, `RAW_FOLDER_ID`, and `REPORT_EMAIL`. Deploy as a Web App with access limited to authorized users. Configure a daily trigger for `sendDailyReport`. A server ACK contains `ok` and the matching `eventId`; only then does the firmware delete the local queue record.
 
