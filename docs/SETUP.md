@@ -27,3 +27,7 @@ Create a spreadsheet with an `Events` sheet and a Drive folder for raw bytes. Pa
 - Email is provided by a scheduled Apps Script report; firmware-triggered alert reporting is absent.
 - No hardware tests, live Google upload, 24-hour soak, POS integration or load test has run.
 - A future authorized print gateway could forward a copy to this device without changing printer traffic; it is not implemented.
+
+## Candidate hardware reference
+
+The attached hardware reference identifies the **Waveshare** ESP32-S3-Touch-LCD-2.8 as a candidate only. Its ST7789 and SPI pins are recorded in `firmware/include/board_profiles/waveshare_esp32s3_touch_lcd_28_candidate.h`, which is not enabled. Waveshare V1 uses CST328 touch, while V2 uses CST3530. Neither controller nor any pin mapping is verified for PCBfun. A vendor schematic or actual board inspection is required before enabling a display/touch driver.
