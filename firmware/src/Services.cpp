@@ -31,16 +31,19 @@ void DisplayManager::begin(){
  Serial.println("LCD adapter disabled: select LCDWIKI profile for candidate hardware");
 #endif
 }
-void DisplayManager::tick(const Diagnostics& d,const CaptureStorage& s){
+void DisplayManager::tick(const Diagnostics& d,CaptureStorage& s,const String& listener){
 #ifdef BOARD_LCDWIKI_ES3C28P
- if(millis()-lastDraw_<500)return;lastDraw_=millis();
+ uint32_t now=millis();if(now-lastDraw_<500)return;lastDraw_=now;
 #ifdef LCDWIKI_DIAGNOSTIC
  adapter_.clear(0x001f);adapter_.text(8,8,"LCDWIKI DIAGNOSTIC",0xffff);adapter_.text(8,40,"Touch: tap screen",0xffff);
 #else
- model_.draw(adapter_,WiFi.SSID(),WiFi.localIP().toString(),d.state(true,false,const_cast<CaptureStorage&>(s).freeBytes()),const_cast<CaptureStorage&>(s).pending());
+ if(now-lastRefresh_>=2000){lastRefresh_=now;pendingCache_=s.pending();auto records=s.history(4);std::vector<UiEvent> events;for(const auto&r:records)events.push_back({r.id,r.ip,r.format,r.bytes,r.timestamp,r.incomplete,false});model_.setEvents(events);}
+ if(model_.selectedId!=loadedId_){loadedId_=model_.selectedId;std::vector<uint8_t> raw;if(s.raw(loadedId_,raw))model_.setRaw(raw);else model_.setRaw({});}
+ String wifiState=WiFi.status()==WL_CONNECTED?"CONNECTED":WiFi.getMode()==WIFI_AP?"SETUP AP":"CONNECTING";
+ model_.draw(adapter_,WiFi.SSID(),WiFi.status()==WL_CONNECTED?WiFi.localIP().toString():WiFi.softAPIP().toString(),wifiState,listener,pendingCache_);
 #endif
 #else
- (void)d;(void)s;
+ (void)d;(void)s;(void)listener;
 #endif
 }
 void TouchInput::begin(){

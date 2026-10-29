@@ -19,3 +19,14 @@
 | Parser and queue on board | NOT TESTED | No hardware |
 | Google Sheets/email | NOT TESTED | No configured deployment or provisioned CA/token |
 | 24-hour stress/POS integration | NOT TESTED | No hardware or authorized POS fixture |
+
+## Initial protocol capture interface (2026-10-29)
+
+| Check | Result | Evidence |
+|---|---|---|
+| LCDWIKI Live Capture build | PASS | `pio run -e lcdwiki_es3c28p_candidate`; `/tmp/wongnai-live-normal.log` |
+| LCDWIKI diagnostic build | PASS | `pio run -e lcdwiki_es3c28p_diagnostic`; `/tmp/wongnai-live-diagnostic.log` |
+| Host UI ordering, touch selection, HEX/TEXT, binary buffer | PASS | `c++ -std=c++17 -Ifirmware/test/host/stubs -Ifirmware/include firmware/src/UiModel.cpp firmware/test/host/ui_test.cpp -o /tmp/wongnai-ui-test && /tmp/wongnai-ui-test` |
+| Real TCP events on physical LCD; touch and Wi-Fi provisioning | NOT TESTED | No verified PCBfun board available; LCDWIKI remains a candidate profile. |
+| TCP latency during UI refresh and cloud failure | NOT TESTED | The loop polls capture before UI; LittleFS reads and LCD drawing can still pause polling. Hardware timing evidence is required. |
+| Raw data after cloud acknowledgment | NOT TESTED | Current queue removes records on acknowledgment, so inspection is available only while the record remains pending. |

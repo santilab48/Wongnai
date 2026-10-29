@@ -1,14 +1,16 @@
 #pragma once
 #include <Arduino.h>
 #include <vector>
-struct UiEvent {String id,ip,format,preview;size_t bytes;uint64_t timestamp;bool uploaded;};
-enum class UiPage {Dashboard,LiveCapture,RawText,RawHex,History,WiFiSettings,Settings};
+struct UiEvent {String id,ip,format;size_t bytes=0;uint64_t timestamp=0;bool incomplete=false;bool simulated=false;};
+enum class UiPage {LiveCapture,RawText,RawHex,WiFiSettings};
 class DisplayAdapter {public:virtual ~DisplayAdapter()=default;virtual void clear(uint16_t color)=0;virtual void text(int x,int y,const String& value,uint16_t color)=0;virtual void button(int x,int y,int w,int h,const String& label)=0;};
 class TouchAdapter {public:virtual ~TouchAdapter()=default;virtual bool read(int& x,int& y)=0;};
 class UiModel {
 public:
- UiPage page=UiPage::Dashboard;std::vector<UiEvent> recent;
- void add(const UiEvent& event){recent.insert(recent.begin(),event);if(recent.size()>20)recent.pop_back();}
- void draw(DisplayAdapter& display,const String& ssid,const String& ip,const String& state,size_t pending);
+ UiPage page=UiPage::LiveCapture;std::vector<UiEvent> recent;String selectedId;std::vector<uint8_t> selectedRaw;
+ String wifiSsid,wifiPassword;bool editingPassword=false;bool connectRequested=false;
+ void setEvents(const std::vector<UiEvent>& events);
+ void setRaw(const std::vector<uint8_t>& raw){selectedRaw=raw;}
+ void draw(DisplayAdapter& display,const String& ssid,const String& ip,const String& wifiState,const String& listenerState,size_t pending);
  void onTouch(int x,int y);
 };
