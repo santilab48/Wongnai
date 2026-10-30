@@ -1,0 +1,9 @@
+.pio
+.vscode/*
+!.vscode/extensions.json
+.vscode/.browse.c_cpp.db*
+.env
+.env.*
+!.env.example
+platformio.local.ini
+secrets.ini

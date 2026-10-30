@@ -7,7 +7,8 @@ class Ili9341vDisplay : public DisplayAdapter {
 public:
  void begin();
  void clear(uint16_t color) override;
- void text(int x,int y,const String& value,uint16_t color) override;
+ void clearRect(int x,int y,int w,int h,uint16_t color) override;
+ void text(int x,int y,const String& value,uint16_t color,uint8_t size=2) override;
  void button(int x,int y,int w,int h,const String& label) override;
 private:
  Adafruit_ILI9341 lcd_{10,46,-1};
